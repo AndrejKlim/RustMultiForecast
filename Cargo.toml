@@ -1,0 +1,15 @@
+[package]
+name = "rmulti_forecast"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+diesel = { version = "2.0.0", features = ["postgres", "numeric", "chrono"] }
+dotenvy = "0.15"
+bigdecimal = "0.3.0"
+reqwest = { version = "0.11", features = ["blocking", "json"] }
+serde = { version = "1.0.148", features = ["derive"] }
+serde_json = "1.0.89"
+chrono = "0.4.23"
