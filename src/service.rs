@@ -6,6 +6,7 @@ use diesel::{Connection, insert_into, PgConnection, RunQueryDsl};
 use crate::models::{Forecast, Location, NewForecast, NewLocation, User};
 use crate::schema::*;
 use diesel::prelude::*;
+use serde_json::Value;
 use crate::enums::{Duration, Source};
 
 pub fn get_weather(user_id: i64) -> Option<String> {
@@ -35,7 +36,11 @@ pub fn get_weather(user_id: i64) -> Option<String> {
                 request_weather(user_id, conn, location)
             };
 
-        Some(actual_forecast.unwrap().forecast_json)
+        let forecast: Value = serde_json::from_str(&actual_forecast.unwrap().forecast_json).unwrap();
+        let mut result = String::new();
+        result.push_str(forecast.get("current").unwrap().get("temp").unwrap().as_f64().unwrap().to_string().as_str());
+
+        Some(result)
     } else {
         Some("Пользователь не найден. Отправьте геолокацию для регистрации".to_string())
     }

@@ -25,7 +25,7 @@ pub fn process_updates() {
                 }
             }
         }
-        sleep(Duration::from_secs(1));
+        sleep(Duration::from_millis(200));
     }
 }
 
@@ -58,8 +58,12 @@ fn on_update(update: &Update) {
         if let Some(data) = &callback.data {
             match data.as_str() {
                 "weather" => {
-                    let text = &get_weather(callback.from.id).unwrap()[..4095]; // tg message max len
-                    send_message_inline(&SendMessageInlineMarkup::new(*chat_id, text.to_string()));
+                    let weather = &get_weather(callback.from.id).unwrap();
+                    if weather.len() > 4095 {
+                        send_message_inline(&SendMessageInlineMarkup::new(*chat_id, weather[..4095].to_string()));
+                    } else {
+                        send_message_inline(&SendMessageInlineMarkup::new(*chat_id, weather.to_string()));
+                    }
                     return;
                 }
                 "set_location" => {
