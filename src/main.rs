@@ -11,18 +11,3 @@ fn main() {
     dotenv().ok();
     process_updates();
 }
-
-// fn main() {
-//
-//     let connection = &mut establish_connection();
-//     let results = location
-//         .load::<Location>(connection)
-//         .expect("Error loading posts");
-//
-//     println!("Displaying {} locations", results.len());
-//     for l in results {
-//         println!("{}", l.lon);
-//         println!("-----------\n");
-//         println!("{}", l.lat);
-//     }
-// }

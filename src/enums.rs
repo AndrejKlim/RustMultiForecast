@@ -9,6 +9,13 @@ pub enum Duration {
     Multi
 }
 
+pub enum Field {
+    Temperature,
+    WindSpeed,
+    Pressure,
+    Humidity
+}
+
 impl Source {
     pub fn as_str(&self) -> &'static str {
         match self {
@@ -22,10 +29,10 @@ impl Source {
         }
     }
 
-    pub fn from_str(str: &str) -> Result<Source, String> {
+    pub fn from_str(str: &str) -> Option<Source> {
         match str {
-            "OpenWeather" => Ok(Source::OpenWeather),
-            _ => Err("No such source".to_string())
+            "OpenWeather" => Some(Source::OpenWeather),
+            _ => None
         }
     }
 }
@@ -49,13 +56,43 @@ impl Duration {
         }
     }
 
-    pub fn from_str(str: &str) -> Result<Duration, String> {
+    pub fn from_str(str: &str) -> Option<Duration> {
         match str {
-            "Weather" => Ok(Duration::Weather),
-            "Nearest" => Ok(Duration::Nearest),
-            "LongTerm" => Ok(Duration::LongTerm),
-            "Multi" => Ok(Duration::Multi),
-            _ => Err("No such duration".to_string())
+            "Weather" => Some(Duration::Weather),
+            "Nearest" => Some(Duration::Nearest),
+            "LongTerm" => Some(Duration::LongTerm),
+            "Multi" => Some(Duration::Multi),
+            _ => None
+        }
+    }
+}
+
+impl Field {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Field::Temperature => "Temperature",
+            Field::WindSpeed => "WindSpeed",
+            Field::Pressure => "Pressure",
+            Field::Humidity => "Humidity"
+        }
+    }
+
+    pub fn to_str(&self) -> String {
+        match self {
+            Field::Temperature => String::from("Temperature"),
+            Field::WindSpeed => String::from("WindSpeed"),
+            Field::Pressure => String::from("Pressure"),
+            Field::Humidity => String::from("Humidity")
+        }
+    }
+
+    pub fn from_str(str: &str) -> Option<Field> {
+        match str {
+            "Temperature" => Some(Field::Temperature),
+            "WindSpeed" => Some(Field::WindSpeed),
+            "Pressure" => Some(Field::Pressure),
+            "Humidity" => Some(Field::Humidity),
+            _ => None
         }
     }
 }

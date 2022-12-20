@@ -1,5 +1,4 @@
 use std::env;
-use std::ops::Neg;
 use bigdecimal::BigDecimal;
 use chrono::{Utc};
 use diesel::{Connection, insert_into, PgConnection, RunQueryDsl};
@@ -36,11 +35,19 @@ pub fn get_weather(user_id: i64) -> Option<String> {
                 request_weather(user_id, conn, location)
             };
 
-        let forecast: Value = serde_json::from_str(&actual_forecast.unwrap().forecast_json).unwrap();
-        let mut result = String::new();
-        result.push_str(forecast.get("current").unwrap().get("temp").unwrap().as_f64().unwrap().to_string().as_str());
+        let search_path = user_field_preferences::table
+            .inner_join(users::table)
+            .inner_join(forecast_field_user_preferences::table)
+            .filter(users::user_id.eq(user_id))
+            .select(forecast_field_user_preferences::search_path)
+            .first::<String>(conn);
 
-        Some(result)
+
+
+        let json: Value = serde_json::from_str(&actual_forecast.as_ref().unwrap().forecast_json).unwrap();
+        let temp = json.get("current").unwrap().get("temp").unwrap().as_f64();
+
+        Some(temp.unwrap().to_string())
     } else {
         Some("Пользователь не найден. Отправьте геолокацию для регистрации".to_string())
     }
@@ -112,7 +119,7 @@ fn is_expired(forecast: &Forecast) -> bool {
 
     let duration = now.signed_duration_since(to_compare);
 
-    if let Ok(duration_type) = Duration::from_str(&forecast.duration) {
+    if let Some(duration_type) = Duration::from_str(&forecast.duration) {
         match duration_type {
             Duration::Weather => duration.num_hours() > 2,
             Duration::Nearest => duration.num_hours() > 12,
