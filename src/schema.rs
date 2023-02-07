@@ -17,6 +17,7 @@ diesel::table! {
         source -> Text,
         field -> Text,
         search_path -> Text,
+        search_result_type -> Text,
     }
 }
 

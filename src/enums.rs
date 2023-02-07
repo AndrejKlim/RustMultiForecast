@@ -95,4 +95,35 @@ impl Field {
             _ => None
         }
     }
+
+    pub fn as_ru_str(&self) -> &'static str {
+        match self {
+            Field::Temperature => "Температура",
+            Field::WindSpeed => "Скорость ветра",
+            Field::Pressure => "Давление",
+            Field::Humidity => "Влажность"
+        }
+    }
+
+    pub fn units(&self) -> &'static str {
+        match self {
+            Field::Temperature => "°C",
+            Field::WindSpeed => "м/с",
+            Field::Pressure => "мм. рт. ст.",
+            Field::Humidity => "%"
+        }
+    }
+
+    pub fn convert(&self, value: String ) -> String {
+        match self {
+            Field::Pressure => format!("{:.0}", value.as_str().parse::<f64>().unwrap() * 0.75006).to_string(),
+            _ => {
+                if let Ok(num) = value.as_str().parse::<f64>() {
+                    format!("{:.1}", num).to_string()
+                } else {
+                    value
+                }
+            }
+        }
+    }
 }
