@@ -40,6 +40,7 @@ diesel::table! {
     users (user_id) {
         user_id -> Int8,
         location_id -> Int4,
+        last_command -> Nullable<Text>,
     }
 }
 

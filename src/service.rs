@@ -1,13 +1,14 @@
 use std::env;
 use bigdecimal::BigDecimal;
 use chrono::{Utc};
-use diesel::{Connection, insert_into, PgConnection, RunQueryDsl};
-use crate::models::{Forecast, Location, NewForecast, NewLocation, User, ForecastFieldPreference};
+use diesel::{Connection, insert_into, delete, PgConnection, RunQueryDsl};
+use crate::models::{Forecast, Location, NewForecast, NewLocation, User, ForecastFieldPreference, NewUserFieldPreference};
 use crate::schema::*;
 use diesel::prelude::*;
 use serde_json::Value;
 use crate::enums::{Duration, Source, Field};
 use jsonpath_rust::JsonPathFinder;
+use log::{debug};
 
 pub fn get_weather(user_id: i64) -> Option<String> {
     let conn = &mut connection();
@@ -86,17 +87,78 @@ pub fn save_location(user_id: i64, longitude: f32, latitude: f32) {
                 .execute(conn);
         } else {
             let _ = insert_into(users::table)
-                .values(User { user_id, location_id: loc.location_id })
-                .get_result::<User>(conn);
+                .values(User { user_id, location_id: loc.location_id, last_command: None })
+                .execute(conn);
         }
     }
 }
 
+pub fn save_forecast_preferences(response_text: &str, user_id_to_update: &i64) {
+    debug!("Unparsed response text: {}", response_text);
+    let split: Vec<String> = response_text.split(",").into_iter().map(|num| num.trim().to_string()).collect();
+
+    let values = Field::values();
+
+    let field_names_to_save: Vec<&Field> = split.iter()
+        .filter_map(|str_num| str_num.parse::<usize>().ok())
+        .filter_map(|num| values.get(num))
+        .collect();
+    debug!("Fields to save: {:?}", field_names_to_save);
+
+    let conn = &mut connection();
+
+    let field_names: Vec<String> = field_names_to_save.iter().map(|f| f.as_str().to_string()).collect();
+
+    let ffup_result = forecast_field_user_preferences::table
+        .filter(forecast_field_user_preferences::field.eq_any(field_names))
+        .select(forecast_field_user_preferences::id)
+        .load::<i32>(conn).ok();
+
+    if let Some(ffup_ids) = ffup_result {
+        if !ffup_ids.is_empty() {
+            let _ = delete(user_field_preferences::table)
+                .filter(user_field_preferences::user_id.eq(user_id_to_update))
+                .execute(conn);
+
+            let to_insert: Vec<NewUserFieldPreference> = ffup_ids.iter()
+                .map(|ff_id| NewUserFieldPreference::new(*user_id_to_update, *ff_id))
+                .collect();
+
+            let _ = insert_into(user_field_preferences::table)
+                .values(to_insert)
+                .execute(conn);
+        }
+    }
+}
 
 pub fn connection() -> PgConnection {
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     PgConnection::establish(&database_url)
         .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
+}
+
+pub fn save_last_user_command(user_id: &i64, command: String) {
+    let conn = &mut connection();
+
+    let _ = diesel::update(users::table.find(user_id))
+        .set(users::last_command.eq(Some(command)))
+        .execute(conn);
+}
+
+pub fn get_last_user_command(user_id: &i64) -> String {
+    let conn = &mut connection();
+
+    let command_result = users::table
+        .filter(users::user_id.eq(user_id))
+        .select(users::last_command)
+        .load::<Option<String>>(conn);
+
+    let commands: Vec<Option<String>> = command_result.unwrap();
+    let opt = commands.get(0).unwrap();
+    match opt {
+        Some(command) => command.to_string(),
+        None => "None".to_string(),
+    }
 }
 
 fn is_expired(forecast: &Forecast) -> bool {

@@ -19,4 +19,6 @@ insert into forecast_field_user_preferences(source, field, search_path, search_r
 VALUES ('OpenWeather', 'Temperature', '$.current.temp', 'f64'),
        ('OpenWeather', 'WindSpeed', '$.current.wind_speed', 'f64'),
        ('OpenWeather', 'Pressure', '$.current.pressure', 'i64'),
-       ('OpenWeather', 'Humidity', '$.current.temp', 'i64');
+       ('OpenWeather', 'Humidity', '$.current.humidity', 'i64');
+
+alter table users add column last_command text;

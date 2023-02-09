@@ -8,6 +8,7 @@ use crate::schema::*;
 pub struct User {
     pub user_id: i64,
     pub location_id: i32,
+    pub last_command: Option<String>,
 }
 
 #[derive(Queryable, Debug)]
@@ -71,5 +72,18 @@ pub struct NewForecastFieldPreference {
 impl NewForecastFieldPreference {
     pub fn new(source: String, field: String, search_path: String, search_result_type: String) -> NewForecastFieldPreference {
         NewForecastFieldPreference { source, field, search_path, search_result_type }
+    }
+}
+
+#[derive(Insertable, Debug)]
+#[diesel(table_name = user_field_preferences)]
+pub struct NewUserFieldPreference {
+    pub user_id: i64,
+    pub pref_id: i32,
+}
+
+impl NewUserFieldPreference {
+    pub fn new(user_id: i64, pref_id: i32) -> NewUserFieldPreference {
+        NewUserFieldPreference { user_id, pref_id }
     }
 }

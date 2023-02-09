@@ -1,3 +1,5 @@
+use crate::enums::Field::{Humidity, Pressure, Temperature, WindSpeed};
+
 pub enum Source {
     OpenWeather
 }
@@ -9,6 +11,7 @@ pub enum Duration {
     Multi
 }
 
+#[derive(Debug)]
 pub enum Field {
     Temperature,
     WindSpeed,
@@ -125,5 +128,9 @@ impl Field {
                 }
             }
         }
+    }
+
+    pub fn values() -> Vec<Field>{
+        vec![Temperature, WindSpeed, Pressure, Humidity]
     }
 }
