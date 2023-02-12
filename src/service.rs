@@ -154,10 +154,13 @@ pub fn get_last_user_command(user_id: &i64) -> String {
         .load::<Option<String>>(conn);
 
     let commands: Vec<Option<String>> = command_result.unwrap();
-    let opt = commands.get(0).unwrap();
-    match opt {
-        Some(command) => command.to_string(),
-        None => "None".to_string(),
+    if let Some(opt) = commands.get(0) {
+        match opt {
+            Some(command) => command.to_string(),
+            None => "None".to_string(),
+        }
+    } else {
+        "None".to_string()
     }
 }
 
