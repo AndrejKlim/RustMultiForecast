@@ -1,10 +1,12 @@
-use crate::telegram::enums::Command::{ChooseForecastPreferences, SetLocation, Weather};
+use crate::telegram::enums::Command::{ChooseForecastPreferences, DeleteNotification, SetLocation, SetNotificationTime, Weather};
 
 #[derive(PartialEq, Debug)]
 pub enum Command {
     Weather,
     SetLocation,
-    ChooseForecastPreferences
+    ChooseForecastPreferences,
+    SetNotificationTime,
+    DeleteNotification,
 }
 
 impl Command {
@@ -13,6 +15,8 @@ impl Command {
             Command::Weather => "Weather",
             Command::SetLocation => "SetLocation",
             Command::ChooseForecastPreferences => "ChooseForecastPreferences",
+            Command::SetNotificationTime => "SetNotificationTime",
+            Command::DeleteNotification => "DeleteNotification",
         }
     }
 
@@ -21,6 +25,8 @@ impl Command {
             Command::Weather => String::from("Weather"),
             Command::SetLocation => String::from("SetLocation"),
             Command::ChooseForecastPreferences => String::from("ChooseForecastPreferences"),
+            Command::SetNotificationTime => String::from("SetNotificationTime"),
+            Command::DeleteNotification => String::from("DeleteNotification"),
         }
     }
 
@@ -29,11 +35,13 @@ impl Command {
             "Weather" => Some(Command::Weather),
             "SetLocation" => Some(Command::SetLocation),
             "ChooseForecastPreferences" => Some(Command::ChooseForecastPreferences),
+            "SetNotificationTime" => Some(Command::SetNotificationTime),
+            "DeleteNotification" => Some(Command::DeleteNotification),
             _ => None
         }
     }
 
     pub fn values(&self) -> Vec<Command>{
-        vec![Weather, SetLocation, ChooseForecastPreferences]
+        vec![Weather, SetLocation, ChooseForecastPreferences, SetNotificationTime, DeleteNotification]
     }
 }

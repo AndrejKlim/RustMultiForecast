@@ -24,7 +24,8 @@ pub fn save_location(user_id: i64, longitude: f32, latitude: f32) {
                 .execute(conn);
         } else {
             let _ = insert_into(users::table)
-                .values(User { user_id, location_id: loc.location_id, last_command: None })
+                .values(User { user_id, location_id: loc.location_id,
+                    last_command: None, notification_time: None })
                 .execute(conn);
         }
     }

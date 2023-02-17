@@ -1,4 +1,5 @@
 use std::{env};
+use std::panic::resume_unwind;
 use std::string::ToString;
 use std::thread::sleep;
 use std::time::Duration;
@@ -6,10 +7,11 @@ use log::{debug, trace};
 use crate::enums::Field;
 use crate::service::command::{get_last_user_command, save_last_user_command};
 use crate::service::location::save_location;
+use crate::service::notification::{delete_notification, set_notification_time};
 use crate::service::preferences::save_forecast_preferences;
 use crate::service::weather::get_weather;
 use crate::telegram::enums::Command;
-use crate::telegram::enums::Command::{ChooseForecastPreferences, SetLocation, Weather};
+use crate::telegram::enums::Command::{ChooseForecastPreferences, DeleteNotification, SetLocation, SetNotificationTime, Weather};
 use crate::telegram::model::{UpdateResponse, Update, InlineKeyboardButton, InlineKeyboardMarkup, SendMessageInlineMarkup, SendMessageReplyMarkup, KeyboardButton, ReplyKeyboardMarkup};
 
 pub fn process_updates() {
@@ -56,6 +58,18 @@ fn on_update(update: &Update) {
                 save_forecast_preferences(&text, &message.from.as_ref().unwrap().id);
                 return;
             }
+            if SetNotificationTime.to_string().eq(&last_command) {
+                let set_result = set_notification_time(&text, &message.from.as_ref().unwrap().id);
+                match set_result {
+                    Ok(result) => {
+                        send_message_inline(&SendMessageInlineMarkup::new(*chat_id, result));
+                    }
+                    Err(err) => {
+                        send_message_inline(&SendMessageInlineMarkup::new(*chat_id, err));
+                    }
+                }
+                return;
+            }
         }
         if let Some(location) = &message.location {
             if let Some(user) = &message.from {
@@ -92,6 +106,17 @@ fn on_update(update: &Update) {
                     save_last_user_command(&callback.from.id, ChooseForecastPreferences.to_string());
                     return;
                 }
+                SetNotificationTime => {
+                    send_message_inline(&SendMessageInlineMarkup::new(*chat_id, "Отправьте время для получения погоды ежедневно. Например 14:20 или 07:05".to_string()));
+                    save_last_user_command(&callback.from.id, SetNotificationTime.to_string());
+                    return;
+                }
+                DeleteNotification => {
+                    delete_notification(&callback.from.id);
+                    send_message_inline(&SendMessageInlineMarkup::new(*chat_id, "Удалено".to_string()));
+                    save_last_user_command(&callback.from.id, DeleteNotification.to_string());
+                    return;
+                }
                 _ => {}
             }
             return;
@@ -119,9 +144,14 @@ fn menu(chat_id: &i32) -> SendMessageInlineMarkup {
         = vec![InlineKeyboardButton::new("Установить локацию".to_string(), Some(SetLocation.to_string()))];
     let choose_forecast_preferences_row
         = vec![InlineKeyboardButton::new("Выбрать отображаемые погодные данные".to_string(), Some(ChooseForecastPreferences.to_string()))];
-    let reply_markup = vec![weather_button_row, location_button_row, choose_forecast_preferences_row];
+    let set_notification_time
+        = vec![InlineKeyboardButton::new("Выбрать время для уведомлений".to_string(), Some(SetNotificationTime.to_string()))];
+    let delete_notification
+        = vec![InlineKeyboardButton::new("Удалить уведомления".to_string(), Some(DeleteNotification.to_string()))];
+    let reply_markup = vec![weather_button_row, location_button_row,
+                            choose_forecast_preferences_row, set_notification_time, delete_notification];
 
-    let mut message = SendMessageInlineMarkup::new(chat_id.clone(), "menu".to_string());
+    let mut message = SendMessageInlineMarkup::new(chat_id.clone(), "Меню команд".to_string());
     message.reply_markup = Some(InlineKeyboardMarkup::new(reply_markup));
     message
 }

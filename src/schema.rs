@@ -41,6 +41,7 @@ diesel::table! {
         user_id -> Int8,
         location_id -> Int4,
         last_command -> Nullable<Text>,
+        notification_time -> Nullable<Text>,
     }
 }
 

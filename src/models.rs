@@ -9,6 +9,14 @@ pub struct User {
     pub user_id: i64,
     pub location_id: i32,
     pub last_command: Option<String>,
+    pub notification_time: Option<String>,
+}
+
+#[derive(AsChangeset)]
+#[diesel(table_name = users)]
+#[changeset_options(treat_none_as_null="true")]
+pub struct UserNotificationTimeUpdate {
+    pub notification_time: Option<String>,
 }
 
 #[derive(Queryable, Debug)]
