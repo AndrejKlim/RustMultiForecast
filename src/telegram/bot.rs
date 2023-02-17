@@ -1,12 +1,13 @@
 use std::{env};
-use std::borrow::Borrow;
-use std::ops::Deref;
 use std::string::ToString;
 use std::thread::sleep;
 use std::time::Duration;
 use log::{debug, trace};
 use crate::enums::Field;
-use crate::service::{get_weather, save_location, save_forecast_preferences, save_last_user_command, get_last_user_command};
+use crate::service::command::{get_last_user_command, save_last_user_command};
+use crate::service::location::save_location;
+use crate::service::preferences::save_forecast_preferences;
+use crate::service::weather::get_weather;
 use crate::telegram::enums::Command;
 use crate::telegram::enums::Command::{ChooseForecastPreferences, SetLocation, Weather};
 use crate::telegram::model::{UpdateResponse, Update, InlineKeyboardButton, InlineKeyboardMarkup, SendMessageInlineMarkup, SendMessageReplyMarkup, KeyboardButton, ReplyKeyboardMarkup};

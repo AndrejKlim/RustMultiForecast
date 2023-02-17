@@ -1,7 +1,6 @@
 use dotenvy::dotenv;
 use crate::telegram::bot::process_updates;
 use log4rs;
-use log::{info};
 
 pub mod models;
 pub mod schema;
